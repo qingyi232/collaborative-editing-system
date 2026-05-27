@@ -1,0 +1,1065 @@
+================================================================================
+            在线协作编辑系统 - 代码说明文档（完整技术解析）
+================================================================================
+
+
+================================================================================
+目录
+================================================================================
+
+  一、项目概述与技术栈
+  二、项目目录结构
+  三、数据库设计（8张表详解）
+  四、后端代码说明
+      4.1  项目入口与配置
+      4.2  统一响应与异常处理
+      4.3  认证与安全模块
+      4.4  文档管理模块
+      4.5  协作成员管理模块
+      4.6  评论系统模块
+      4.7  版本管理模块
+      4.8  系统管理模块（管理员）
+      4.9  WebSocket 实时协作模块
+      4.10 OT 算法引擎
+  五、前端代码说明
+      5.1  项目入口与全局配置
+      5.2  路由系统与权限控制
+      5.3  状态管理（Pinia）
+      5.4  API 请求封装
+      5.5  登录与注册页面
+      5.6  文档工作台（Dashboard）
+      5.7  文档编辑器（Editor）
+      5.8  个人设置页面（Profile）
+      5.9  管理员功能页面
+      5.10 WebSocket 客户端
+  六、前后端接口对照表
+  七、核心技术原理
+
+================================================================================
+一、项目概述与技术栈
+================================================================================
+
+  本系统是一个基于 Spring Boot + Vue3 的在线协作编辑系统，支持多人实时
+  协作编辑文档，核心功能包括：文档管理、实时协作编辑、版本控制、评论系统、
+  权限管理、系统监控等。
+
+  ◆ 技术栈总览：
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │ 层级           │ 技术选型                                    │
+  ├──────────────────────────────────────────────────────────────┤
+  │ 前端框架       │ Vue 3.4+（Composition API + script setup）  │
+  │ 前端构建       │ Vite 5.4                                    │
+  │ UI 组件库      │ Element Plus 2.7                            │
+  │ 富文本编辑器   │ Quill 1.3（Delta 格式操作）                 │
+  │ 图表库         │ ECharts 6 + vue-echarts 8                   │
+  │ 状态管理       │ Pinia 2.1                                   │
+  │ 前端路由       │ Vue Router 4.3（History 模式）              │
+  │ HTTP 客户端    │ Axios 1.7                                   │
+  │ 实时通信       │ 原生 WebSocket                              │
+  ├──────────────────────────────────────────────────────────────┤
+  │ 后端框架       │ Spring Boot 2.7.18                          │
+  │ 编程语言       │ Java 17                                     │
+  │ ORM 框架       │ MyBatis-Plus 3.5.5                          │
+  │ 数据库         │ MySQL 8.0                                   │
+  │ 认证方案       │ Spring Security + JWT（jjwt 0.9.1）         │
+  │ WebSocket      │ Spring WebSocket（TextWebSocketHandler）    │
+  │ 工具库         │ Lombok、Hutool 5.8.25                       │
+  │ 密码加密       │ BCrypt（Spring Security 内置）              │
+  └──────────────────────────────────────────────────────────────┘
+
+  ◆ 系统架构图（文字版）：
+
+  ┌───────────┐     HTTP/WS      ┌───────────┐        ┌─────────┐
+  │  浏览器    │ ◄──────────────► │ Vite Dev  │◄─Proxy─│ Spring  │
+  │ (Vue3 SPA) │   localhost:5173 │  Server   │  /api  │  Boot   │
+  └───────────┘                  └───────────┘  /ws   │  8080   │
+                                                       └────┬────┘
+                                                            │
+                                                       ┌────▼────┐
+                                                       │  MySQL  │
+                                                       │  3306   │
+                                                       └─────────┘
+
+================================================================================
+二、项目目录结构
+================================================================================
+
+  协作编辑系统/
+  │
+  ├── 部署运行文档.txt          ← 部署运行指南
+  ├── 代码说明文档.txt          ← 本文档
+  ├── 测试账号.txt              ← 测试用账号密码
+  ├── 需求文档                  ← 项目需求说明
+  │
+  ├── backend/                  ← 后端项目（Spring Boot）
+  │   ├── pom.xml               ← Maven 依赖配置文件
+  │   ├── sql/
+  │   │   └── init.sql          ← 数据库初始化脚本
+  │   └── src/main/
+  │       ├── java/com/collab/
+  │       │   ├── CollabApplication.java      ← 应用启动入口
+  │       │   ├── common/                     ← 公共类
+  │       │   │   ├── Result.java             ← 统一响应封装
+  │       │   │   ├── PageResult.java         ← 分页结果封装
+  │       │   │   ├── BusinessException.java  ← 自定义业务异常
+  │       │   │   └── GlobalExceptionHandler.java ← 全局异常处理器
+  │       │   ├── config/                     ← 配置类
+  │       │   │   ├── SecurityConfig.java     ← Spring Security 配置
+  │       │   │   ├── WebSocketConfig.java    ← WebSocket 配置
+  │       │   │   ├── CorsConfig.java         ← 跨域配置
+  │       │   │   └── MyBatisPlusConfig.java  ← MyBatis-Plus 配置
+  │       │   ├── controller/                 ← 控制器层（接收HTTP请求）
+  │       │   │   ├── AuthController.java     ← 认证接口
+  │       │   │   ├── DocumentController.java ← 文档接口
+  │       │   │   ├── MemberController.java   ← 成员管理接口
+  │       │   │   ├── CommentController.java  ← 评论接口
+  │       │   │   ├── VersionController.java  ← 版本管理接口
+  │       │   │   └── AdminController.java    ← 管理员接口
+  │       │   ├── dto/                        ← 数据传输对象
+  │       │   │   ├── LoginDTO.java           ← 登录请求体
+  │       │   │   ├── RegisterDTO.java        ← 注册请求体
+  │       │   │   ├── DocumentDTO.java        ← 文档请求体
+  │       │   │   ├── MemberDTO.java          ← 成员请求体
+  │       │   │   ├── CommentDTO.java         ← 评论请求体
+  │       │   │   └── SystemConfigDTO.java    ← 系统配置请求体
+  │       │   ├── entity/                     ← 实体类（对应数据库表）
+  │       │   │   ├── User.java               ← 用户实体
+  │       │   │   ├── Document.java           ← 文档实体
+  │       │   │   ├── DocumentMember.java     ← 文档成员实体
+  │       │   │   ├── DocumentVersion.java    ← 文档版本实体
+  │       │   │   ├── DocumentComment.java    ← 文档评论实体
+  │       │   │   ├── OperationLog.java       ← 操作日志实体
+  │       │   │   ├── AuditLog.java           ← 审计日志实体
+  │       │   │   └── SystemConfig.java       ← 系统配置实体
+  │       │   ├── mapper/                     ← MyBatis 映射接口
+  │       │   │   ├── UserMapper.java
+  │       │   │   ├── DocumentMapper.java
+  │       │   │   ├── DocumentMemberMapper.java
+  │       │   │   ├── DocumentVersionMapper.java
+  │       │   │   ├── DocumentCommentMapper.java
+  │       │   │   ├── OperationLogMapper.java
+  │       │   │   ├── AuditLogMapper.java
+  │       │   │   └── SystemConfigMapper.java
+  │       │   ├── service/                    ← 业务逻辑层接口
+  │       │   │   ├── AuthService.java
+  │       │   │   ├── DocumentService.java
+  │       │   │   ├── DocumentMemberService.java
+  │       │   │   ├── CommentService.java
+  │       │   │   ├── VersionService.java
+  │       │   │   ├── AuditLogService.java
+  │       │   │   ├── SystemConfigService.java
+  │       │   │   └── impl/                   ← 业务逻辑层实现
+  │       │   │       ├── AuthServiceImpl.java
+  │       │   │       ├── DocumentServiceImpl.java
+  │       │   │       ├── DocumentMemberServiceImpl.java
+  │       │   │       ├── CommentServiceImpl.java
+  │       │   │       ├── VersionServiceImpl.java
+  │       │   │       ├── AuditLogServiceImpl.java
+  │       │   │       └── SystemConfigServiceImpl.java
+  │       │   ├── interceptor/
+  │       │   │   └── JwtAuthenticationFilter.java ← JWT 认证过滤器
+  │       │   ├── util/
+  │       │   │   └── JwtUtil.java            ← JWT 工具类
+  │       │   └── websocket/
+  │       │       ├── CollabWebSocketHandler.java ← WebSocket 处理器
+  │       │       └── OTEngine.java           ← OT 算法引擎
+  │       └── resources/
+  │           ├── application.yml             ← 应用配置文件
+  │           └── mapper/
+  │               └── DocumentMapper.xml      ← MyBatis XML 映射
+  │
+  └── frontend/                 ← 前端项目（Vue 3）
+      ├── index.html            ← HTML 入口
+      ├── package.json          ← npm 依赖配置
+      ├── vite.config.js        ← Vite 构建配置
+      └── src/
+          ├── App.vue           ← 根组件
+          ├── main.js           ← 应用入口（挂载Vue实例）
+          ├── api/              ← API 请求模块
+          │   ├── request.js    ← Axios 封装（拦截器、Token）
+          │   ├── auth.js       ← 认证相关 API
+          │   ├── document.js   ← 文档相关 API
+          │   └── admin.js      ← 管理员相关 API
+          ├── router/
+          │   └── index.js      ← 路由配置（含导航守卫）
+          ├── store/
+          │   ├── user.js       ← 用户状态管理
+          │   └── document.js   ← 文档状态管理
+          ├── utils/
+          │   └── websocket.js  ← WebSocket 客户端封装
+          ├── assets/styles/
+          │   └── global.scss   ← 全局样式与 CSS 变量
+          └── views/            ← 页面组件
+              ├── auth/
+              │   ├── Login.vue       ← 登录页面
+              │   └── Register.vue    ← 注册页面
+              ├── layout/
+              │   └── MainLayout.vue  ← 主布局（侧边栏+顶栏）
+              ├── dashboard/
+              │   └── Dashboard.vue   ← 文档工作台（首页）
+              ├── editor/
+              │   └── Editor.vue      ← 文档编辑器（核心页面）
+              ├── profile/
+              │   └── Profile.vue     ← 个人设置页面
+              └── admin/
+                  ├── AuditLogs.vue   ← 操作日志审计
+                  ├── SystemConfig.vue← 系统配置管理
+                  └── Monitor.vue     ← 资源监控（含图表）
+
+================================================================================
+三、数据库设计（8张表详解）
+================================================================================
+
+  数据库名：collab_edit
+  字符集：utf8mb4（支持 emoji 和中文）
+  排序规则：utf8mb4_unicode_ci
+
+  ◆ 表 1：sys_user（用户表）
+
+  存储系统中所有注册用户的基本信息和认证数据。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 用户唯一ID
+  username        | VARCHAR(50)   | NOT NULL, UNIQUE   | 登录用户名
+  password        | VARCHAR(255)  | NOT NULL           | BCrypt加密密码
+  nickname        | VARCHAR(50)   |                    | 显示昵称
+  email           | VARCHAR(100)  |                    | 邮箱地址
+  avatar          | VARCHAR(255)  |                    | 头像URL
+  role            | VARCHAR(20)   | DEFAULT 'USER'     | 角色：USER/DOC_ADMIN/SYS_ADMIN
+  status          | TINYINT       | DEFAULT 1          | 状态：0禁用 1正常
+  last_login_time | DATETIME      |                    | 最后登录时间
+  created_at      | DATETIME      | DEFAULT NOW()      | 创建时间
+  updated_at      | DATETIME      | DEFAULT NOW()      | 更新时间（自动更新）
+
+  角色说明：
+  - USER：普通用户，可创建/编辑文档、查看在线用户、添加评论、版本对比/回滚
+  - DOC_ADMIN：文档管理员，额外可设置权限、管理成员、转移所有权
+  - SYS_ADMIN：系统管理员，额外可查看系统配置、审计日志、资源监控
+
+  ◆ 表 2：document（文档表）
+
+  存储所有文档的元数据和内容。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 文档唯一ID
+  title           | VARCHAR(200)  | NOT NULL           | 文档标题
+  content         | LONGTEXT      |                    | 文档内容（Quill Delta JSON）
+  owner_id        | BIGINT        | FK → sys_user.id   | 创建者/所有者ID
+  status          | TINYINT       | DEFAULT 1          | 0已删除 1正常 2归档
+  is_public       | TINYINT       | DEFAULT 0          | 0私有 1公开
+  current_version | INT           | DEFAULT 1          | 当前版本号
+  doc_size        | BIGINT        | DEFAULT 0          | 文档大小（字节）
+  created_at      | DATETIME      | DEFAULT NOW()      | 创建时间
+  updated_at      | DATETIME      | DEFAULT NOW()      | 更新时间
+
+  说明：删除文档为软删除（status=0），不会物理删除数据行。
+
+  ◆ 表 3：document_member（文档成员表）
+
+  存储文档的协作成员及其权限。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 记录ID
+  document_id     | BIGINT        | FK → document.id   | 文档ID
+  user_id         | BIGINT        | FK → sys_user.id   | 用户ID
+  permission      | VARCHAR(20)   | DEFAULT 'VIEW'     | VIEW只读/EDIT可编辑/ADMIN管理员
+  invited_by      | BIGINT        |                    | 邀请人ID
+  created_at      | DATETIME      | DEFAULT NOW()      | 加入时间
+  updated_at      | DATETIME      | DEFAULT NOW()      | 更新时间
+
+  联合唯一约束：(document_id, user_id)，防止重复添加成员。
+
+  ◆ 表 4：document_version（文档版本表）
+
+  存储文档的历史版本快照，支持版本对比和回滚。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 版本记录ID
+  document_id     | BIGINT        | FK → document.id   | 所属文档ID
+  version_number  | INT           | NOT NULL           | 版本号（递增）
+  content         | LONGTEXT      |                    | 该版本的完整内容快照
+  content_hash    | VARCHAR(64)   |                    | 内容哈希（用于校验）
+  operator_id     | BIGINT        | FK → sys_user.id   | 保存版本的用户ID
+  change_summary  | VARCHAR(500)  |                    | 版本变更说明
+  doc_size        | BIGINT        | DEFAULT 0          | 该版本文档大小
+  created_at      | DATETIME      | DEFAULT NOW()      | 创建时间
+
+  ◆ 表 5：operation_log（操作日志表）
+
+  存储文档编辑过程中的每个原子操作（OT 操作），用于协作冲突处理。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 操作ID
+  document_id     | BIGINT        | FK → document.id   | 文档ID
+  user_id         | BIGINT        | NOT NULL           | 操作用户ID
+  operation_type  | VARCHAR(30)   | NOT NULL           | INSERT/DELETE/RETAIN/FORMAT
+  operation_data  | TEXT          |                    | 操作详细数据（JSON格式）
+  base_version    | INT           | NOT NULL           | 基于的版本号
+  created_at      | DATETIME      | DEFAULT NOW()      | 操作时间
+
+  ◆ 表 6：document_comment（文档评论表）
+
+  存储文档中的评论，支持嵌套回复和标记解决。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 评论ID
+  document_id     | BIGINT        | FK → document.id   | 所属文档ID
+  user_id         | BIGINT        | FK → sys_user.id   | 评论者ID
+  content         | TEXT          | NOT NULL           | 评论内容
+  parent_id       | BIGINT        |                    | 父评论ID（用于回复）
+  position_info   | VARCHAR(200)  |                    | 关联文档位置（JSON）
+  resolved        | TINYINT       | DEFAULT 0          | 0未解决 1已解决
+  created_at      | DATETIME      | DEFAULT NOW()      | 创建时间
+  updated_at      | DATETIME      | DEFAULT NOW()      | 更新时间
+
+  ◆ 表 7：audit_log（系统审计日志表）
+
+  记录系统中所有重要操作，用于安全审计和问题追踪。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 日志ID
+  user_id         | BIGINT        |                    | 操作用户ID
+  username        | VARCHAR(50)   |                    | 操作用户名
+  action          | VARCHAR(50)   | NOT NULL           | 动作：LOGIN/CREATE/UPDATE/DELETE等
+  target_type     | VARCHAR(30)   |                    | 目标类型：DOCUMENT/USER/SYSTEM
+  target_id       | BIGINT        |                    | 目标对象ID
+  detail          | TEXT          |                    | 操作详情
+  ip_address      | VARCHAR(50)   |                    | 操作者IP地址
+  created_at      | DATETIME      | DEFAULT NOW()      | 操作时间
+
+  ◆ 表 8：system_config（系统配置表）
+
+  存储可动态调整的系统参数。
+
+  字段名          | 类型          | 约束               | 说明
+  ─────────────────────────────────────────────────────────────────
+  id              | BIGINT        | PK, AUTO_INCREMENT | 配置ID
+  config_key      | VARCHAR(100)  | NOT NULL, UNIQUE   | 配置键名
+  config_value    | VARCHAR(500)  |                    | 配置值
+  description     | VARCHAR(200)  |                    | 配置说明
+  updated_by      | BIGINT        |                    | 最后修改人ID
+  created_at      | DATETIME      | DEFAULT NOW()      | 创建时间
+  updated_at      | DATETIME      | DEFAULT NOW()      | 更新时间
+
+  初始配置项：
+  - max_storage_per_user：单用户存储上限（默认 100MB = 104857600 字节）
+  - version_retention_days：版本保留天数（默认 90 天）
+  - max_doc_size：单文档大小上限（默认 10MB = 10485760 字节）
+  - max_collaborators：单文档最大协作人数（默认 20 人）
+  - websocket_heartbeat_interval：WebSocket 心跳间隔（默认 30 秒）
+
+================================================================================
+四、后端代码说明
+================================================================================
+
+------------------------------------------------------------------------
+4.1 项目入口与配置
+------------------------------------------------------------------------
+
+  ◆ CollabApplication.java
+  Spring Boot 应用启动入口类，使用 @SpringBootApplication 注解，
+  通过 @MapperScan("com.collab.mapper") 自动扫描 MyBatis Mapper 接口。
+
+  ◆ application.yml
+  核心配置文件，定义了：
+  - 服务端口：8080
+  - MySQL 数据库连接信息：localhost:3306/collab_edit
+  - MyBatis-Plus 配置：驼峰命名映射、SQL 日志、自增主键策略
+  - JWT 配置：密钥和过期时间（24小时 = 86400000毫秒）
+
+  ◆ MyBatisPlusConfig.java
+  配置 MyBatis-Plus 分页插件 MybatisPlusInterceptor 和自动填充处理器，
+  自动为 createdAt 和 updatedAt 字段填充当前时间。
+
+  ◆ CorsConfig.java
+  配置跨域资源共享（CORS），允许前端开发服务器（localhost:5173）
+  访问后端 API。
+
+------------------------------------------------------------------------
+4.2 统一响应与异常处理
+------------------------------------------------------------------------
+
+  ◆ Result.java
+  统一 API 响应格式封装：
+  - code：状态码（200 成功，其他为错误码）
+  - message：提示消息
+  - data：业务数据
+  提供静态方法：success()、success(data)、fail(message)、fail(code, message)
+
+  ◆ PageResult.java
+  分页结果封装：
+  - records：当前页数据列表
+  - total：总记录数
+  - size：每页大小
+  - current：当前页码
+  - pages：总页数
+
+  ◆ GlobalExceptionHandler.java
+  使用 @RestControllerAdvice 注解，全局捕获异常并返回统一格式响应，
+  处理 BusinessException（业务异常）和 Exception（未知异常）。
+
+------------------------------------------------------------------------
+4.3 认证与安全模块
+------------------------------------------------------------------------
+
+  ◆ SecurityConfig.java
+  Spring Security 配置：
+  - 禁用 CSRF（前后端分离项目）
+  - 会话策略设为 STATELESS（无状态，使用 JWT）
+  - 放行路径：/api/auth/**（登录注册）、/ws/**（WebSocket）
+  - 其他所有请求需要认证
+  - 在 UsernamePasswordAuthenticationFilter 之前插入 JwtAuthenticationFilter
+
+  ◆ JwtUtil.java
+  JWT 令牌工具类：
+  - generateToken(userId, username, role)：生成 JWT 令牌
+    包含 claims：userId、username、role、过期时间
+  - getUserIdFromToken(token)：从令牌解析用户ID
+  - getUsernameFromToken(token)：从令牌解析用户名
+  - validateToken(token)：验证令牌有效性
+
+  ◆ JwtAuthenticationFilter.java
+  JWT 认证过滤器（OncePerRequestFilter）：
+  - 从 HTTP Header 中提取 Authorization: Bearer <token>
+  - 调用 JwtUtil 验证令牌
+  - 验证通过后将用户信息设置到 SecurityContext 中
+  - 后续 Controller 可通过 SecurityContextHolder 获取当前用户ID
+
+  ◆ AuthController.java
+  认证相关接口：
+  - POST /api/auth/login    → 用户登录，返回 JWT Token
+  - POST /api/auth/register → 用户注册
+  - GET  /api/auth/info     → 获取当前登录用户信息
+  - PUT  /api/auth/profile  → 更新个人资料（昵称、邮箱）
+  - PUT  /api/auth/password → 修改密码（需验证旧密码）
+  - GET  /api/auth/search   → 搜索用户（用于邀请成员）
+
+  ◆ AuthServiceImpl.java
+  认证业务逻辑：
+  - login：校验用户名+BCrypt密码 → 记录登录时间 → 生成JWT → 记录审计日志
+  - register：检查用户名唯一性 → BCrypt加密密码 → 插入用户 → 记录审计日志
+  - getUserInfo：查询用户信息（password置空后返回）
+  - updateProfile：更新昵称和邮箱
+  - changePassword：验证旧密码 → BCrypt加密新密码 → 更新
+  - searchUsers：按用户名或昵称模糊搜索，排除当前用户，限制10条
+
+------------------------------------------------------------------------
+4.4 文档管理模块
+------------------------------------------------------------------------
+
+  ◆ DocumentController.java
+  文档 CRUD 接口：
+  - POST   /api/doc          → 创建文档
+  - GET    /api/doc/{id}     → 获取单个文档
+  - PUT    /api/doc/{id}     → 更新文档（标题/内容/公开状态）
+  - DELETE /api/doc/{id}     → 删除文档（软删除）
+  - GET    /api/doc/list     → 获取我的全部文档（分页）
+  - GET    /api/doc/own      → 获取我创建的文档（分页）
+  - GET    /api/doc/shared   → 获取与我共享的文档（分页）
+  - GET    /api/doc/stats    → 获取文档统计数据
+  - POST   /api/doc/{id}/transfer → 转移文档所有权
+
+  ◆ DocumentServiceImpl.java
+  文档业务逻辑：
+  - createDocument：创建文档 + 自动创建 V1 版本快照 + 记录审计日志
+  - getDocument：权限校验（所有者/公开/成员）→ 返回文档
+  - updateDocument：权限校验（所有者/EDIT权限）→ 更新字段 + 计算文档大小
+  - deleteDocument：仅所有者可删除 → 软删除（status=0）+ 记录审计日志
+  - listMyDocuments：UNION 查询（自己创建的 + 被共享的）→ 手动分页
+  - listSharedDocuments：仅查询被共享的文档
+  - listOwnDocuments：仅查询自己创建的文档
+  - getDocumentStats：统计 ownCount、sharedCount、totalCount
+  - transferOwnership：验证当前用户是所有者 → 更新 owner_id
+
+  ◆ DocumentMapper.xml
+  自定义 SQL 映射（MyBatis XML）：
+  - selectUserDocuments：UNION 查询用户可见的所有文档
+  - selectSharedDocuments：INNER JOIN 查询共享文档
+  - selectOwnDocuments：查询用户创建的文档
+
+------------------------------------------------------------------------
+4.5 协作成员管理模块
+------------------------------------------------------------------------
+
+  ◆ MemberController.java
+  文档成员管理接口：
+  - POST   /api/doc/{docId}/member       → 添加成员
+  - DELETE /api/doc/{docId}/member/{uid}  → 移除成员
+  - PUT    /api/doc/{docId}/member        → 更新成员权限
+  - GET    /api/doc/{docId}/member/list   → 获取成员列表
+
+  ◆ DocumentMemberServiceImpl.java
+  - addMember：检查重复 → 插入 document_member 记录
+  - removeMember：删除 document_member 记录
+  - updatePermission：更新 permission 字段
+  - listMembers：JOIN sys_user 查询成员列表（含昵称、用户名、头像），
+    同时将文档所有者以 "OWNER" 权限插入到列表首位
+
+------------------------------------------------------------------------
+4.6 评论系统模块
+------------------------------------------------------------------------
+
+  ◆ CommentController.java
+  文档评论接口：
+  - POST   /api/doc/{docId}/comment               → 添加评论
+  - GET    /api/doc/{docId}/comment/list           → 获取评论列表
+  - PUT    /api/doc/{docId}/comment/{id}/resolve   → 标记评论为已解决
+  - DELETE /api/doc/{docId}/comment/{id}           → 删除评论
+
+  ◆ CommentServiceImpl.java
+  - addComment：插入评论记录（关联 documentId 和 userId）
+  - listComments：JOIN sys_user 查询评论列表，返回扁平化对象
+    （包含 nickname、avatar 等用户信息）
+  - resolveComment：设置 resolved=1
+  - deleteComment：物理删除评论记录
+
+------------------------------------------------------------------------
+4.7 版本管理模块
+------------------------------------------------------------------------
+
+  ◆ VersionController.java
+  文档版本管理接口：
+  - POST /api/doc/{docId}/version                    → 创建新版本
+  - GET  /api/doc/{docId}/version/list               → 获取版本列表（分页）
+  - GET  /api/doc/{docId}/version/{versionId}        → 获取版本详情
+  - GET  /api/doc/{docId}/version/compare?v1=&v2=    → 版本对比
+  - POST /api/doc/{docId}/version/{versionId}/rollback → 回滚到指定版本
+
+  ◆ VersionServiceImpl.java
+  - createVersion：快照当前文档内容 → 版本号+1 → 更新文档 currentVersion
+  - listVersions：按 versionNumber 降序分页查询
+  - getVersion：根据 versionId 查询 + 校验 docId 归属
+  - compareVersions：查询两个版本 + 校验 docId 归属 → 返回两个版本内容
+  - rollbackVersion：验证版本归属 → 用历史版本内容覆盖当前文档 →
+    创建新版本记录（变更说明为 "回滚至版本 X"）
+
+------------------------------------------------------------------------
+4.8 系统管理模块（管理员）
+------------------------------------------------------------------------
+
+  ◆ AdminController.java
+  系统管理接口（仅 SYS_ADMIN 可访问）：
+  - GET /api/admin/logs    → 查询审计日志（支持 action/targetType 筛选 + 分页）
+  - GET /api/admin/configs → 获取所有系统配置项
+  - PUT /api/admin/config  → 更新系统配置项
+  - GET /api/admin/monitor → 获取实时资源监控数据
+
+  监控数据来源（全部为运行时真实数据）：
+  - jvmMemoryUsed：ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed()
+  - jvmMemoryMax：ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax()
+  - jvmMemoryUsage：内存使用百分比（计算得出）
+  - cpuCores：Runtime.getRuntime().availableProcessors()
+  - activeThreads：Thread.activeCount()
+  - onlineConnections：CollabWebSocketHandler.getOnlineCount()（WebSocket 连接数）
+
+------------------------------------------------------------------------
+4.9 WebSocket 实时协作模块
+------------------------------------------------------------------------
+
+  ◆ WebSocketConfig.java
+  注册 WebSocket 端点 /ws/collaborate，使用 CollabWebSocketHandler 处理。
+
+  ◆ CollabWebSocketHandler.java（extends TextWebSocketHandler）
+  核心 WebSocket 处理器，管理文档的实时协作连接：
+
+  连接管理：
+  - afterConnectionEstablished：用户连接时从 URL 参数中解析 token 和 docId，
+    验证 JWT → 将连接加入文档对应的会话集合 → 广播 userJoin 事件
+  - afterConnectionClosed：连接断开时从会话集合移除 → 广播 userLeave 事件
+
+  消息处理：
+  - handleTextMessage：解析 JSON 消息，根据 type 字段分发处理：
+    - "operation"：将编辑操作广播给同文档的其他在线用户
+    - "cursor"：将光标位置广播给其他用户
+
+  辅助方法：
+  - getDocumentOnlineUsers(docId)：获取文档当前在线用户名集合
+  - getOnlineCount()：获取所有 WebSocket 连接总数（静态方法）
+
+------------------------------------------------------------------------
+4.10 OT 算法引擎
+------------------------------------------------------------------------
+
+  ◆ OTEngine.java
+  实现操作转换（Operational Transformation）算法：
+
+  核心概念：
+  - 当多个用户同时编辑同一文档时，各自的操作可能会冲突
+  - OT 算法通过转换操作，使所有用户最终看到一致的文档内容
+
+  主要方法：
+  - transform(op1, op2)：将两个并发操作进行转换，
+    返回转换后的操作对，保证操作应用后内容一致
+  - compose(op1, op2)：将两个连续操作合并为一个操作
+
+================================================================================
+五、前端代码说明
+================================================================================
+
+------------------------------------------------------------------------
+5.1 项目入口与全局配置
+------------------------------------------------------------------------
+
+  ◆ main.js
+  Vue 应用入口：
+  - 创建 Vue 应用实例
+  - 注册 Element Plus 组件库（全局注册）
+  - 注册 Pinia 状态管理
+  - 注册 Vue Router
+  - 引入全局样式 global.scss
+  - 挂载到 #app 元素
+
+  ◆ App.vue
+  根组件，仅包含 <router-view /> 用于渲染路由对应的页面组件。
+
+  ◆ vite.config.js
+  Vite 构建配置：
+  - 注册 Vue 插件
+  - 配置 @ 路径别名指向 src 目录
+  - 开发服务器端口：5173
+  - 代理配置：
+    /api → http://localhost:8080（后端 REST API）
+    /ws  → ws://localhost:8080（WebSocket 协作连接）
+
+  ◆ global.scss
+  全局 CSS 变量定义（项目设计色系）：
+  - --primary-color: #2DB87F（主色调-绿色）
+  - --secondary-color: #36B5A0（辅助色-青色）
+  - --bg-color: #F5F7FA（背景色-浅灰）
+  - --text-primary: #1A1A2E（主文字色）
+  - --text-secondary: #8896A4（次文字色）
+  - --border-color: #E8ECF1（边框色）
+
+------------------------------------------------------------------------
+5.2 路由系统与权限控制
+------------------------------------------------------------------------
+
+  ◆ router/index.js
+
+  路由结构：
+
+  /login              → 登录页面（无需认证）
+  /register           → 注册页面（无需认证）
+  /                   → MainLayout（需认证，requiresAuth: true）
+    ├── /dashboard    → 文档工作台（默认首页，redirect 指向此处）
+    ├── /shared       → 与我共享（复用 Dashboard 组件，通过 route.path 区分）
+    ├── /profile      → 个人设置
+    ├── /editor/:id   → 文档编辑器（动态路由，:id 为文档ID）
+    ├── /admin/logs   → 操作日志（meta.role = SYS_ADMIN）
+    ├── /admin/config → 系统配置（meta.role = SYS_ADMIN）
+    └── /admin/monitor→ 资源监控（meta.role = SYS_ADMIN）
+
+  导航守卫（beforeEach）：
+  1. 需要认证的路由（requiresAuth）：检查 localStorage 中是否有 token
+     - 有 token → 放行
+     - 无 token → 重定向到 /login?redirect=目标路径
+  2. 登录/注册页面：如果已有 token → 重定向到 /（避免重复登录）
+  3. 其他路由 → 直接放行
+
+------------------------------------------------------------------------
+5.3 状态管理（Pinia）
+------------------------------------------------------------------------
+
+  ◆ store/user.js
+  用户状态管理（defineStore）：
+
+  State：
+  - token：JWT 令牌（从 localStorage 初始化）
+  - userInfo：用户信息对象（从 localStorage 初始化）
+
+  Getters：
+  - isLoggedIn：是否已登录（!!token）
+  - role：当前用户角色
+  - isSysAdmin：是否是系统管理员
+
+  Actions：
+  - login(credentials)：调用登录 API → 保存 token 和 userInfo 到 state + localStorage
+  - register(data)：调用注册 API
+  - getUserInfo()：调用获取用户信息 API → 更新 state + localStorage
+  - logout()：清空 state + localStorage → 跳转到登录页
+
+  ◆ store/document.js
+  文档状态管理：
+  - currentDoc：当前编辑的文档
+  - documents：文档列表
+  - fetchDocument(id)：从后端获取文档详情
+  - fetchDocuments(params)：从后端获取文档列表
+
+------------------------------------------------------------------------
+5.4 API 请求封装
+------------------------------------------------------------------------
+
+  ◆ api/request.js
+  Axios 实例封装：
+  - baseURL：'/api'（通过 Vite proxy 转发到后端 8080）
+  - 请求拦截器：自动从 localStorage 获取 token，设置 Authorization Header
+  - 响应拦截器：
+    - 正常响应（HTTP 200）：判断 res.code
+      - code === 200 → 返回业务数据
+      - code === 401 → 清除 token，跳转登录页
+      - 其他 → ElMessage.error 显示错误，Promise.reject
+    - 异常响应（HTTP 4xx/5xx）：
+      - 401 → 清除 token，跳转登录页
+      - 其他 → 显示错误消息
+
+  ◆ api/auth.js
+  认证模块 API：
+  - login(data)        → POST /auth/login
+  - register(data)     → POST /auth/register
+  - getUserInfo()      → GET  /auth/info
+  - updateProfile(data)→ PUT  /auth/profile
+  - changePassword(data)→ PUT /auth/password
+  - searchUsers(keyword)→ GET /auth/search?keyword=
+
+  ◆ api/document.js
+  文档模块 API（完整列表）：
+  - createDocument(data)              → POST   /doc
+  - getDocument(id)                   → GET    /doc/{id}
+  - updateDocument(id, data)          → PUT    /doc/{id}
+  - deleteDocument(id)                → DELETE /doc/{id}
+  - getDocumentList(params)           → GET    /doc/list
+  - getSharedDocuments(params)        → GET    /doc/shared
+  - getOwnDocuments(params)           → GET    /doc/own
+  - getDocumentStats()                → GET    /doc/stats
+  - transferDocument(id, newOwnerId)  → POST   /doc/{id}/transfer
+  - addMember(docId, data)            → POST   /doc/{docId}/member
+  - removeMember(docId, userId)       → DELETE /doc/{docId}/member/{userId}
+  - updateMember(docId, data)         → PUT    /doc/{docId}/member
+  - getMemberList(docId)              → GET    /doc/{docId}/member/list
+  - createVersion(docId, data)        → POST   /doc/{docId}/version
+  - getVersionList(docId, params)     → GET    /doc/{docId}/version/list
+  - getVersion(docId, versionId)      → GET    /doc/{docId}/version/{versionId}
+  - compareVersions(docId, v1, v2)    → GET    /doc/{docId}/version/compare?v1=&v2=
+  - rollbackVersion(docId, versionId) → POST   /doc/{docId}/version/{versionId}/rollback
+  - addComment(docId, data)           → POST   /doc/{docId}/comment
+  - getCommentList(docId)             → GET    /doc/{docId}/comment/list
+  - resolveComment(docId, commentId)  → PUT    /doc/{docId}/comment/{commentId}/resolve
+  - deleteComment(docId, commentId)   → DELETE /doc/{docId}/comment/{commentId}
+
+  ◆ api/admin.js
+  管理员模块 API：
+  - getLogs(params)      → GET /admin/logs
+  - getConfigs()         → GET /admin/configs
+  - updateConfig(data)   → PUT /admin/config
+  - getMonitor()         → GET /admin/monitor
+
+------------------------------------------------------------------------
+5.5 登录与注册页面
+------------------------------------------------------------------------
+
+  ◆ Login.vue
+  登录页面：
+  - 背景：Unsplash 协作主题图片 + 毛玻璃效果 + 品牌色渐变叠加
+  - 表单：用户名 + 密码，Element Plus 表单校验
+  - 登录流程：调用 userStore.login() → 成功后跳转到 Dashboard
+  - 底部链接：跳转到注册页
+
+  ◆ Register.vue
+  注册页面：
+  - 与登录页风格一致
+  - 表单：用户名 + 昵称 + 邮箱 + 密码 + 确认密码
+  - 注册流程：调用 userStore.register() → 成功后自动跳转登录页
+  - 校验规则：用户名必填、密码至少6位、两次密码一致
+
+------------------------------------------------------------------------
+5.6 文档工作台（Dashboard）
+------------------------------------------------------------------------
+
+  ◆ Dashboard.vue
+  用户进入系统后的主页面，展示文档概览。
+
+  页面结构：
+  1. 顶部操作栏：标题 "文档工作台" + "新建文档"按钮
+  2. 统计卡片行：3 张卡片显示全部文档数/我创建的/与我共享的
+     - 数据来源：调用 getDocumentStats() API
+     - 点击卡片可切换对应标签页
+  3. 工具栏行：标签页切换（全部/我创建的/与我共享）+ 搜索框
+  4. 文档卡片网格：响应式网格布局展示文档卡片
+     - 每张卡片显示：文档图标、标题、更新时间、公开/私有标签
+     - 卡片右上角 "..." 下拉菜单：分享、删除
+     - 点击卡片进入编辑器
+  5. 分页组件：支持切换页码和每页大小
+  6. 新建文档弹窗：输入标题 + 是否公开
+  7. 分享弹窗：搜索用户 → 选择用户 → 设置权限 → 分享
+
+  关键交互：
+  - 点击"与我共享"侧边栏菜单 → 路由变为 /shared → watch 检测后切换标签页
+  - 删除文档后自动刷新统计和列表
+  - 分享文档时可搜索用户名/昵称
+
+------------------------------------------------------------------------
+5.7 文档编辑器（Editor）
+------------------------------------------------------------------------
+
+  ◆ Editor.vue
+  系统核心页面 —— 富文本协作编辑器。
+
+  页面布局：
+  ┌────────────────────────────────────────────────────────────┐
+  │ 工具栏：返回按钮 | 文档标题(可编辑) | 保存状态 | 在线用户头像 │
+  │         | 保存版本按钮 | 展开/收起面板按钮                    │
+  ├───────────────────────────────────┬────────────────────────┤
+  │                                   │ 右侧面板（可折叠）      │
+  │                                   │ ┌─ 成员标签页 ─────────┤
+  │    Quill 富文本编辑器区域         │ │  添加成员按钮          │
+  │                                   │ │  成员列表（头像+权限） │
+  │    支持：标题、加粗、斜体、       │ ├─ 评论标签页 ─────────┤
+  │    下划线、颜色、列表、           │ │  评论输入框            │
+  │    对齐、引用、代码块、           │ │  评论列表（可解决/删除）│
+  │    链接、图片                     │ ├─ 版本标签页 ─────────┤
+  │                                   │ │  版本列表（查看/回滚） │
+  │                                   │ │  版本对比选择器        │
+  │                                   │ ├─ 设置标签页 ─────────┤
+  │                                   │ │  公开/私有切换         │
+  │                                   │ │  文档大小/版本/创建时间│
+  │                                   │ │  转移所有权            │
+  └───────────────────────────────────┴────────────────────────┘
+
+  核心逻辑：
+
+  1. 文档加载（onMounted）：
+     → fetchDocument(docId) 获取文档数据
+     → initEditor() 初始化 Quill 编辑器
+     → 解析 JSON content → quill.setContents(delta)
+     → connectWebSocket() 建立实时连接
+     → 并行加载成员/评论/版本数据
+
+  2. 实时保存：
+     → quill.on('text-change') 监听编辑事件
+     → 仅 source === 'user' 时触发（排除 API 导入的变更）
+     → 防抖 2 秒后调用 updateDocument() 保存到数据库
+     → 同时通过 WebSocket 发送操作给其他在线用户
+
+  3. WebSocket 协作：
+     → 连接 /ws/collaborate?docId=X&token=XXX
+     → 接收 operation 事件 → quill.updateContents(ops, 'api')
+     → 接收 userJoin/userLeave/sync → 更新在线用户头像列表
+     → 发送 cursor 事件 → 同步光标位置
+
+  4. 弹窗功能：
+     → 添加成员弹窗：搜索用户 → 选择 → 设置权限 → 邀请
+     → 保存版本弹窗：输入版本说明 → 创建版本快照
+     → 版本详情弹窗：查看历史版本内容
+     → 版本对比弹窗：左右两栏对比展示
+
+------------------------------------------------------------------------
+5.8 个人设置页面（Profile）
+------------------------------------------------------------------------
+
+  ◆ Profile.vue
+  用户个人信息管理页面。
+
+  功能：
+  1. 基本信息卡片：
+     - 显示头像（首字母圆形）、昵称、角色标签
+     - 可修改昵称和邮箱
+     - 保存调用 updateProfile() API → 同步更新 Pinia store 和 localStorage
+  2. 修改密码卡片：
+     - 输入旧密码、新密码、确认密码
+     - 前端校验：新密码至少6位、两次输入一致
+     - 保存调用 changePassword() API
+     - 成功后 1.5 秒自动登出，要求重新登录
+
+  页面进入时自动调用 getUserInfo() 从后端刷新最新用户数据。
+
+------------------------------------------------------------------------
+5.9 管理员功能页面
+------------------------------------------------------------------------
+
+  ◆ AuditLogs.vue（操作日志）
+  审计日志查询页面：
+  - 筛选栏：操作类型（登录/创建/更新/删除/导出）+ 目标类型（文档/用户/系统）
+  - 数据表格：时间、用户、操作（彩色标签）、目标类型、详情、IP地址
+  - 分页组件：支持 10/20/50 条每页
+  - 数据完全来自后端 /admin/logs 接口的真实审计记录
+
+  ◆ SystemConfig.vue（系统配置）
+  系统参数配置页面：
+  - 配置表格：配置项名、当前值、说明、编辑按钮
+  - 编辑弹窗：修改配置值 → 调用 updateConfig() API → 自动刷新列表
+  - 所有配置项存储在 system_config 表中
+
+  ◆ Monitor.vue（资源监控）
+  服务器资源实时监控页面：
+  - 4 张指标卡片：
+    - JVM 内存使用（带进度条，颜色随百分比变化：绿<60% / 黄<80% / 红>=80%）
+    - CPU 核心数
+    - 活跃线程数
+    - WebSocket 在线连接数
+  - 2 张实时趋势图表（ECharts 折线图）：
+    - JVM 内存使用趋势：展示最近 30 个采样点的内存使用量（MB）
+    - 线程 & 连接数趋势：同一图表双线展示活跃线程数和 WebSocket 连接数
+  - 自动刷新：每 10 秒调用 getMonitor() API 获取最新数据
+  - 所有数据均为后端运行时真实数据，图表随数据实时变化
+
+------------------------------------------------------------------------
+5.10 WebSocket 客户端
+------------------------------------------------------------------------
+
+  ◆ utils/websocket.js
+  WebSocket 连接封装类 CollabSocket：
+
+  构造参数：docId（文档ID）、token（JWT 令牌）
+
+  核心方法：
+  - connect()：建立 WebSocket 连接到 ws://localhost:8080/ws/collaborate
+    URL 参数携带 docId 和 token
+  - onMessage(type, callback)：注册消息处理回调
+  - sendOperation(ops, baseVersion)：发送编辑操作
+  - sendCursor(position)：发送光标位置
+  - close()：关闭连接
+
+  内置机制：
+  - 心跳检测：每 30 秒发送 ping 消息
+  - 自动重连：连接断开后自动尝试重连（最多重试若干次）
+  - 消息解析：收到消息后解析 JSON，根据 type 字段分发到对应回调
+
+================================================================================
+六、前后端接口对照表
+================================================================================
+
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ 方法   │ 后端路径                                │ 前端函数              │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │        │         【认证模块】                     │                       │
+  │ POST   │ /api/auth/login                         │ login()               │
+  │ POST   │ /api/auth/register                      │ register()            │
+  │ GET    │ /api/auth/info                           │ getUserInfo()         │
+  │ PUT    │ /api/auth/profile                        │ updateProfile()       │
+  │ PUT    │ /api/auth/password                       │ changePassword()      │
+  │ GET    │ /api/auth/search?keyword=                │ searchUsers()         │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │        │         【文档模块】                     │                       │
+  │ POST   │ /api/doc                                 │ createDocument()      │
+  │ GET    │ /api/doc/{id}                            │ getDocument()         │
+  │ PUT    │ /api/doc/{id}                            │ updateDocument()      │
+  │ DELETE │ /api/doc/{id}                            │ deleteDocument()      │
+  │ GET    │ /api/doc/list?page=&size=               │ getDocumentList()     │
+  │ GET    │ /api/doc/own?page=&size=                │ getOwnDocuments()     │
+  │ GET    │ /api/doc/shared?page=&size=             │ getSharedDocuments()  │
+  │ GET    │ /api/doc/stats                           │ getDocumentStats()    │
+  │ POST   │ /api/doc/{id}/transfer                   │ transferDocument()    │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │        │         【成员模块】                     │                       │
+  │ POST   │ /api/doc/{docId}/member                  │ addMember()           │
+  │ DELETE │ /api/doc/{docId}/member/{userId}         │ removeMember()        │
+  │ PUT    │ /api/doc/{docId}/member                  │ updateMember()        │
+  │ GET    │ /api/doc/{docId}/member/list             │ getMemberList()       │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │        │         【评论模块】                     │                       │
+  │ POST   │ /api/doc/{docId}/comment                 │ addComment()          │
+  │ GET    │ /api/doc/{docId}/comment/list            │ getCommentList()      │
+  │ PUT    │ /api/doc/{docId}/comment/{id}/resolve    │ resolveComment()      │
+  │ DELETE │ /api/doc/{docId}/comment/{id}            │ deleteComment()       │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │        │         【版本模块】                     │                       │
+  │ POST   │ /api/doc/{docId}/version                 │ createVersion()       │
+  │ GET    │ /api/doc/{docId}/version/list            │ getVersionList()      │
+  │ GET    │ /api/doc/{docId}/version/{versionId}     │ getVersion()          │
+  │ GET    │ /api/doc/{docId}/version/compare?v1=&v2= │ compareVersions()     │
+  │ POST   │ /api/doc/{docId}/version/{id}/rollback   │ rollbackVersion()     │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │        │         【管理员模块】                   │                       │
+  │ GET    │ /api/admin/logs                           │ getLogs()             │
+  │ GET    │ /api/admin/configs                        │ getConfigs()          │
+  │ PUT    │ /api/admin/config                         │ updateConfig()        │
+  │ GET    │ /api/admin/monitor                        │ getMonitor()          │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │        │         【WebSocket】                    │                       │
+  │ WS     │ /ws/collaborate?docId=X&token=XXX        │ CollabSocket          │
+  └────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+七、核心技术原理
+================================================================================
+
+------------------------------------------------------------------------
+7.1 JWT 认证流程
+------------------------------------------------------------------------
+
+  1. 用户登录 → 后端验证密码 → 生成 JWT Token（包含 userId, username, role）
+  2. 前端将 Token 保存到 localStorage
+  3. 后续每次请求，Axios 拦截器自动在 Header 中添加：Authorization: Bearer <token>
+  4. 后端 JwtAuthenticationFilter 拦截请求 → 解析并验证 Token
+     → 将用户信息注入 SecurityContext
+  5. Controller 通过 SecurityContextHolder 获取当前用户 ID
+  6. Token 有效期 24 小时，过期后前端会收到 401 → 自动跳转登录页
+
+------------------------------------------------------------------------
+7.2 OT（操作转换）算法原理
+------------------------------------------------------------------------
+
+  场景：用户 A 和用户 B 同时编辑同一段文字 "Hello"
+
+  用户 A 在位置 5 插入 " World"  → 操作 Op_A: insert(5, " World")
+  用户 B 在位置 0 插入 "Say "    → 操作 Op_B: insert(0, "Say ")
+
+  如果直接按顺序执行，结果会不一致。
+
+  OT 转换过程：
+  - A 收到 Op_B 后，需要转换自己的操作位置：
+    因为 B 在 A 之前插入了 4 个字符，A 的操作位置需要 +4
+    转换后 Op_A' = insert(9, " World")
+  - 最终所有用户看到相同结果："Say Hello World"
+
+  本系统通过 WebSocket 实时广播操作，OTEngine 负责操作转换。
+
+------------------------------------------------------------------------
+7.3 混合存储模式（操作日志 + 快照）
+------------------------------------------------------------------------
+
+  ◆ 操作日志存储：
+  每次编辑操作（插入/删除/格式化）都记录到 operation_log 表。
+  优点：精确记录每步操作，可回放编辑历史。
+  缺点：随时间积累，数据量大。
+
+  ◆ 快照存储：
+  用户手动保存版本时，将当前文档完整内容保存到 document_version 表。
+  优点：快速加载文档（直接读取快照），版本对比方便。
+  缺点：每个版本都是完整副本，占用存储空间。
+
+  ◆ 混合策略：
+  - 日常编辑通过操作日志实时同步
+  - 关键节点通过快照保存版本
+  - 通过系统配置 version_retention_days 控制版本保留期限
+  - 平衡了实时性（操作日志）和存储效率（定期快照）
+
+------------------------------------------------------------------------
+7.4 WebSocket 心跳与重连
+------------------------------------------------------------------------
+
+  ◆ 心跳机制：
+  客户端每 30 秒发送 ping 消息（JSON 格式 {type: "ping"}），
+  如果一段时间内没有收到 pong 响应，认为连接已断开。
+
+  ◆ 自动重连：
+  连接异常关闭时（onclose/onerror），客户端会自动尝试重新连接。
+  重连间隔逐步增大（避免服务器压力），重连后重新同步文档状态。
+
+  ◆ 在线用户管理：
+  - 连接时：后端将用户加入文档的在线集合 → 广播 userJoin（附带最新在线列表）
+  - 断开时：后端将用户移出在线集合 → 广播 userLeave（附带最新在线列表）
+  - 前端收到事件后更新在线用户头像显示
+
+------------------------------------------------------------------------
+7.5 密码安全方案
+------------------------------------------------------------------------
+
+  使用 BCrypt 算法加密存储密码：
+  - BCrypt 是一种自适应哈希函数，内置盐值（salt），每次加密结果不同
+  - 即使数据库泄露，攻击者也无法反推出原始密码
+  - Spring Security 内置 BCryptPasswordEncoder：
+    - 注册时：passwordEncoder.encode(plainPassword) → 生成密文
+    - 登录时：passwordEncoder.matches(plainPassword, hashedPassword) → 比对
+
+================================================================================
+                            文档结束
+================================================================================

@@ -1,0 +1,257 @@
+[3] style=Normal | 本科毕业设计（论文、创作）
+[7] style=Normal | 题  目：基于Java的志愿服务活动管理系统的设计与实现 
+[8] style=Normal | 学生姓名：       陈雨婷       学号：      2201010553 
+[9] style=Normal | 所在学院：       工学部       专业：      软件工程  
+入学时间：       2022        年           09      月
+[10] style=Normal | 导师姓名：      程业桉      职称/学位：助教/硕士  
+导师所在单位：           安徽三联学院               
+完成时间：          2026        年        03       月
+[15] style=Normal | 安徽三联学院教务处制
+[18] style=正文_关键词 | 基于Java的志愿服务活动管理系统的设计与实现
+[19] style=正文_关键词 | 摘要：近些年来，我国社会公益事业发展非常迅速，志愿服务在社区治理、环境保护以及教育帮扶等领域发挥着越来越突出的作用。但是在实际开展志愿服务活动的过程当中，很多组织和团体仍然采用传统的线下方式来管理活动信息、志愿者报名和服务时长记录等工作，存在信息传递不及时、数据统计不够准确、管理效率比较低下等诸多问题。针对上述情况，本文设计并开发了一套基于Java的志愿服务活动管理系统，旨在通过信息化的手段来解决志愿服务管理中的痛点问题。
+[20] style=正文_关键词 | 本系统采用前后端分离的B/S架构进行开发。后端选用Spring Boot作为基础开发框架，结合MyBatis-Plus实现数据持久化操作，使用Spring Security和JWT技术完成用户身份认证与权限管理，数据库使用MySQL来存储系统数据。前端部分采用React框架配合TypeScript语言进行开发，借助Vite构建工具提升开发效率，通过Axios库与后端API进行数据交互，并且使用Recharts图表库实现数据可视化展示。系统主要实现了用户认证管理、志愿活动管理、活动报名管理、签到考勤管理、系统公告管理、用户管理以及数据统计分析等七大功能模块。
+[21] style=正文_关键词 | 经过系统性的功能测试和实际使用验证，本系统各项功能运行稳定，操作流畅，基本满足了志愿服务组织对于活动管理的实际需求。系统能够有效地提高志愿服务活动的组织管理效率，实现了志愿者信息和服务数据的在线化、规范化管理，对推动志愿服务事业的信息化建设具有一定的实际应用价值和参考意义。
+[22] style=Normal | 关键词：志愿服务；活动管理系统；Spring Boot；React；前后端分离
+[24] style=Normal | Design and Implementation of Volunteer Service Activity Management Based on Java
+[25] style=Normal | Abstract:In recent years, volunteer service has been playing an increasingly prominent role in community governance, environmental protection, and educational assistance in China. However, many organizations still rely on traditional offline methods to manage activity information, volunteer registration, and service hour records, resulting in untimely information delivery, inaccurate data statistics, and low management efficiency. To address these issues, this paper designs and develops a Java-based volunteer service activity management system, aiming to solve the pain points in volunteer service management through information technology.
+[26] style=Normal | The system adopts a front-end and back-end separated B/S architecture. The back-end uses Spring Boot as the basic development framework, combined with MyBatis-Plus for data persistence, and employs Spring Security and JWT technology for user authentication and authorization management, with MySQL as the database. The front-end is developed using React framework with TypeScript, utilizing Vite as the build tool and Axios for API communication, and implements data visualization with Recharts chart library. The system implements seven major functional modules including user authentication, volunteer activity management, registration management, attendance management, announcement management, user management, and statistical analysis.
+[27] style=Normal | Through systematic functional testing and practical verification, the system operates stably with smooth user experience, basically meeting the practical needs of volunteer service organizations for activity management. The system effectively improves the organizational management efficiency of volunteer service activities and realizes the online and standardized management of volunteer information and service data.
+[28] style=Normal | Key words: Volunteer Service; Activity Management System; Spring Boot; React; Front-end and Back-end Separation
+[32] style=Normal | 目  录
+[39] style=Normal | 1 绪论
+[41] style=Heading 2 | 1.1 研究背景与现状
+[42] style=Normal | 志愿服务作为一种自愿、无偿为社会和他人提供服务的行为，一直以来都是社会文明进步的重要标志之一。根据民政部发布的相关数据显示，截至2024年底，我国通过全国志愿服务信息系统注册的志愿者人数已经超过了2.3亿人，志愿服务团体数量也达到了135万个。由此可见，我国的志愿服务事业正处于一个蓬勃发展的阶段，参与志愿服务的人数在不断增长。
+[43] style=Normal | 然而，在志愿服务快速发展的同时，管理方面也暴露出了不少问题。目前许多中小型志愿服务组织在开展活动的时候，往往还是依靠微信群通知、Excel表格登记、纸质签到单等比较原始的方式来进行管理。这样的管理方式虽然简单直接，但是存在着诸多不足之处，比如活动信息发布不够及时，志愿者报名流程繁琐，签到考勤记录容易出错或者丢失，服务时长统计缺乏准确性等等。这些问题在一定程度上制约了志愿服务工作的有效开展和进一步发展。
+[44] style=Normal | 随着互联网和信息技术的不断发展进步，越来越多的行业和领域开始采用信息化管理系统来提升工作效率。在志愿服务这个领域，虽然已经有一些大型的志愿服务平台（比如全国志愿服务信息系统“志愿中国”、“志愿汇”等），但是这些平台通常功能比较复杂，更适合全国性或省市级的大规模应用场景。对于一些高校、社区、小型公益组织等基层单位来说，它们更加需要一套功能适中、部署灵活、操作简便的志愿服务管理系统来满足日常的管理需要。
+[45] style=Normal | 从技术发展的角度来看，当前主流的Web应用开发已经逐步走向了前后端分离的架构模式。后端以Java语言生态中的Spring Boot框架最为成熟和流行，它简化了Spring应用的搭建和配置过程，使得开发者可以更加专注于业务逻辑的实现。前端方面，React、Vue等现代化JavaScript框架能够构建出交互体验良好的单页面应用（SPA），大大提升了用户的使用感受。这些技术的发展为开发一套轻量化的志愿服务管理系统提供了良好的技术支撑。
+[46] style=Heading 2 | 1.2 研究目的及意义
+[47] style=Normal | 本课题研究的主要目的是设计并实现一套基于Java技术栈的志愿服务活动管理系统，通过该系统来解决传统志愿服务管理中存在的效率低下、信息不对称、数据不准确等痛点问题。具体来说，本系统希望达到以下几个目标：
+[48] style=Normal | 第一，搭建一个信息发布和共享的平台，使得管理员能够方便快捷地发布志愿活动信息和系统公告，志愿者能够随时随地通过浏览器查看活动详情并进行在线报名。第二，实现志愿活动全流程的线上管理，包括活动的创建发布、志愿者的在线报名、活动现场的签到考勤、服务时长的自动累计等环节，减少人工操作的工作量和出错概率。第三，提供数据统计分析功能，管理员可以直观地看到各项活动的参与情况、志愿者的服务时长排行等数据，为管理决策提供数据支持。
+[49] style=Normal | 本课题的研究具有一定的实际应用价值和理论参考意义。从实际层面来讲，该系统的开发可以切实地帮助志愿服务组织解决管理上的困难，提高管理效率，推动志愿服务工作的信息化和规范化建设。从学术层面来讲，本系统的设计与实现过程涉及到系统需求分析、架构设计、数据库设计、接口设计以及前后端协同开发等多个方面的知识，对于软件工程专业的学生来说是一次很好的综合实践锻炼，有助于加深对软件开发全流程的理解和掌握。
+[50] style=Heading 2 | 1.3 研究内容与组织结构
+[51] style=Normal | 本文围绕基于Java的志愿服务活动管理系统的设计与实现展开研究和论述，全文共分为七个章节，各章节的主要内容安排如下：
+[52] style=Normal | 第一章是绪论部分，主要介绍了本课题的研究背景、国内外发展现状、研究的目的和意义以及论文的组织结构。第二章是相关技术介绍，对系统开发过程中所使用到的Spring Boot、MyBatis-Plus、React、MySQL和JWT等关键技术进行了简要的介绍和说明。第三章是系统需求分析，从功能需求和非功能性需求两个方面对系统进行了详细的需求分析，并通过用例图描述了系统的主要功能场景。第四章是系统设计，包括系统总体架构设计、功能模块设计、数据库设计以及接口设计等内容。第五章是系统实现，详细展示了各个功能模块的具体实现过程和关键代码。第六章是系统测试，通过设计功能测试用例对系统各模块的主要功能进行了测试验证。第七章是结论，总结了全文的研究工作和成果，并指出了不足之处和未来的改进方向。
+[56] style=Heading 1 | 2 相关技术介绍
+[58] style=Heading 2 | 2.1 Spring Boot框架
+[59] style=Normal | Spring Boot是Pivotal团队在2014年推出的一款基于Spring框架的快速开发框架，其核心理念是"约定优于配置"。在传统的Spring项目开发中，开发者需要编写大量的XML配置文件或者Java配置类来完成框架的初始化和组件的装配工作，这个过程不仅繁琐而且容易出错。Spring Boot的出现极大地简化了这一过程，它通过自动配置（Auto Configuration）机制，能够根据项目中引入的依赖自动推断并完成相应的配置工作，使得开发者可以在极短的时间内搭建起一个可以运行的Spring应用程序。
+[60] style=Normal | 本系统使用的是Spring Boot 3.3.5版本，该版本基于Spring Framework 6.x构建，要求Java 17及以上的运行环境。系统充分利用了Spring Boot提供的诸多特性，包括内嵌的Tomcat服务器、自动化的依赖管理、统一的异常处理机制以及便捷的RESTful API开发支持等。同时，系统还整合了Spring Security安全框架来实现用户的身份认证和接口的访问授权控制，保障了系统的安全性。
+[61] style=Heading 2 | 2.2 MyBatis-Plus框架
+[62] style=Normal | MyBatis-Plus是一个基于MyBatis的增强工具库，在不改变MyBatis原有功能的基础上，对其进行了功能增强和使用简化。MyBatis-Plus的设计宗旨是简化开发、提高效率，它提供了丰富的功能特性，包括通用的CRUD操作方法、条件构造器（Wrapper）、代码自动生成器、分页插件、逻辑删除支持以及自动填充功能等。开发者在使用MyBatis-Plus的时候，对于简单的增删改查操作，甚至不需要编写任何SQL语句就可以完成数据库操作。
+[63] style=Normal | 本系统使用的是MyBatis-Plus 3.5.8版本。在数据访问层（Mapper层），系统中所有的Mapper接口都继承了BaseMapper泛型接口，从而自动获得了selectById、selectPage、insert、updateById、deleteById等标准的数据操作方法。在业务较为复杂的查询场景中，则使用LambdaQueryWrapper条件构造器来实现动态条件组装，使得查询代码更加简洁和类型安全。此外，系统还配置了分页插件（PaginationInnerInterceptor）来支持分页查询功能，以及MetaObjectHandler自动填充处理器来自动维护created_at和updated_at等公共字段。
+[64] style=Heading 2 | 2.3 React前端框架
+[65] style=Normal | React是由Facebook（现Meta公司）在2013年开源的一款用于构建用户界面的JavaScript库。React的核心思想是组件化开发和虚拟DOM（Virtual DOM），它将页面拆分成一个个独立的、可复用的组件，每个组件管理自己的状态和渲染逻辑。当数据发生变化时，React会通过虚拟DOM的差异比对算法（Diffing Algorithm）来高效地更新真实DOM中需要改变的部分，而不是重新渲染整个页面，这样就大大提升了页面的渲染性能和用户交互体验。
+[66] style=Normal | 本系统的前端部分使用React 19.2.0版本进行开发，并且结合了TypeScript语言来增强代码的类型安全性和可维护性。项目使用Vite作为构建工具，Vite采用了原生ES Module的方式进行模块加载，能够实现毫秒级的热更新（HMR），显著提升了开发过程中的编译速度和开发体验。在UI交互方面，系统使用Lucide React图标库提供丰富的图标支持，使用Recharts图表库实现管理端的柱状图和饼图等数据可视化展示。前后端之间的数据通信则通过Axios HTTP客户端库来完成，所有的API请求都携带JWT Token用于身份验证。
+[67] style=Heading 2 | 2.4 MySQL数据库
+[68] style=Normal | MySQL是一款由Oracle公司维护的开源关系型数据库管理系统，目前已经是全球最流行的开源数据库之一。MySQL以其性能优越、稳定可靠、使用方便以及开源免费等优点，被广泛地应用于各类Web应用系统的数据存储中。MySQL支持标准的SQL查询语言，提供了完善的事务处理、索引优化、存储过程以及触发器等数据库管理功能。
+[69] style=Normal | 本系统使用MySQL 8.x版本作为数据存储介质，数据库名为volunteer_connect，采用utf8mb4字符编码以支持中文和特殊字符的存储。系统共设计了5张业务数据表，分别是sys_user（用户表）、vol_activity（活动表）、vol_registration（报名表）、vol_attendance（考勤表）和vol_announcement（公告表），各表之间通过外键关联关系来维护数据的完整性和一致性。
+[70] style=Heading 2 | 2.5 JWT认证技术
+[71] style=Normal | JWT全称是JSON Web Token，是一种开放的行业标准（RFC 7519），用于在各方之间以JSON对象的形式安全地传输信息。一个标准的JWT由三个部分组成：Header（头部）、Payload（载荷）和Signature（签名），三个部分之间用点号(.)分隔。JWT通常被用在Web应用的用户认证场景中，相比于传统的基于Session-Cookie的认证方式，JWT认证具有无状态性（Stateless），服务端不需要维护会话状态，天然支持分布式部署和水平扩展。
+[72] style=Normal | 本系统的用户认证流程是：用户在登录的时候提交用户名和密码，后端验证通过后生成一个包含用户ID、用户名和角色信息的JWT Token并返回给前端。前端将Token保存在浏览器的localStorage中，之后每次发送API请求时都在HTTP请求头的Authorization字段中携带该Token。后端通过JwtAuthenticationFilter过滤器来拦截请求，解析和验证Token的合法性，如果验证通过则允许访问对应的API接口，否则返回401未授权错误。Token的有效期设置为7天，过期后需要用户重新登录获取新的Token。
+[75] style=Heading 1 | 3 系统需求分析
+[76] style=Heading 2 | 3.1 系统功能需求分析
+[77] style=Normal | 根据前期的调研和分析，本系统的使用对象主要分为两类角色：管理员和志愿者。管理员负责系统的后台管理工作，包括志愿活动的创建发布、报名信息的管理、活动签到的记录以及系统公告的维护等。志愿者是系统的普通用户，可以浏览活动信息、报名参加志愿活动、查看个人服务记录等。基于这两类用户的需求，本系统需要实现以下主要功能模块：
+[78] style=Normal | （1）用户认证模块：包括用户的注册和登录功能。新用户可以通过注册页面创建账号，已注册用户通过用户名和密码进行登录，登录成功后系统根据用户角色显示不同的功能界面。（2）活动管理模块：管理员可以对志愿活动进行创建、编辑、删除等操作，设置活动的标题、描述、地点、时间、招募人数等信息。所有用户都可以浏览活动列表，支持按关键词搜索和按状态筛选。（3）报名管理模块：志愿者可以在线报名参加活动，系统会进行名额检查并自动完成报名审批，同时更新活动的已报名人数。（4）考勤签到模块：管理员可以为已报名的志愿者记录签到情况，包括签到状态（已签到/缺席/请假）和实际服务时长，签到完成后系统自动累加志愿者的总服务时长。
+[79] style=Normal | （5）公告管理模块：管理员可以发布、编辑和删除系统公告，支持公告置顶功能，公告信息会在系统首页进行滚动展示。（6）用户管理模块：管理员可以查看所有注册用户的列表信息，支持按关键词搜索和按角色筛选，可以启用或禁用用户账号。（7）统计分析模块：系统提供志愿者服务时长排行榜、个人服务统计、活动参与数据图表等统计信息，管理员还可以导出统计报表。
+[80] style=Heading 2 | 3.2 系统用例分析
+[81] style=Normal | 用例图（Use Case Diagram）是UML建模语言中的一种行为图，主要用来描述系统的功能需求以及系统与外部用户（Actor）之间的交互关系。通过绘制用例图，可以清晰地展现系统需要实现的各项功能以及每个功能与用户角色之间的对应关系。根据前面的功能需求分析，本系统的系统用例图如图3-1所示。
+[83] style=Normal | 图3-1 系统用例图
+[84] style=Normal | 从图3-1可以看出，系统中存在志愿者和管理员两个参与者角色。志愿者的主要用例包括用户登录注册、浏览活动列表、报名志愿活动、查看报名状态、个人资料管理、以及查看服务时长等。管理员的主要用例包括活动的增删改查、活动签到管理、公告的增删改查、用户管理、数据统计分析以及导出统计报表等。两个角色之间既有各自独立的功能用例，也共享登录认证这一公共用例。
+[85] style=Heading 2 | 3.3 系统非功能性需求
+[86] style=Normal | 除了上述功能性需求之外，系统还应当满足以下非功能性需求：（1）易用性：系统界面设计要简洁直观，操作流程要合理流畅，普通用户不需要经过专门的培训就能够上手使用。（2）安全性：系统需要对用户的身份进行严格验证，对敏感数据（如用户密码）进行加密存储，不同角色的用户只能访问其权限范围内的功能和数据。（3）可维护性：系统代码结构清晰，采用分层架构设计，各层之间职责明确、耦合度低，便于后期的维护和功能扩展。（4）响应速度：系统的主要操作响应时间应控制在合理范围内，页面加载和数据查询不应出现明显的卡顿现象。
+[89] style=Heading 1 | 4 系统设计
+[91] style=Heading 2 | 4.1 系统总体架构设计
+[92] style=Normal | 本系统采用前后端分离的B/S（Browser/Server）架构模式进行设计和开发。前后端分离的核心思想是将系统的用户界面展示逻辑和后台业务处理逻辑进行解耦分离，前端应用和后端服务各自独立开发、独立部署，两者之间通过HTTP协议和RESTful风格的API接口进行数据交互。这种架构模式的好处是前后端可以并行开发互不干扰，提高开发效率；同时各自可以独立选择最适合的技术栈和工具，充分发挥各自技术领域的优势。
+[93] style=Normal | 本系统的总体架构自上而下可以划分为五个层次：用户层、前端展示层、网络通信层、后端服务层和数据存储层。系统总体架构图如图4-1所示。
+[95] style=Normal | 图4-1 系统总体架构图
+[96] style=正文_关键词 | 用户层即使用浏览器访问系统的终端用户。前端展示层基于React+TypeScript技术栈构建SPA应用，负责页面的渲染和用户交互逻辑的处理。网络通信层通过Axios HTTP客户端发送携带JWT Token的RESTful API请求，实现前后端之间的数据通信。后端服务层按照经典的三层架构进行组织：Controller控制层负责接收HTTP请求并返回响应，Service业务层负责核心业务逻辑的处理和事务管理，Mapper持久层负责与数据库的交互操作。同时，Spring Security安全层贯穿整个后端服务，为系统提供身份认证和权限控制保障。数据存储层使用MySQL关系型数据库来持久化存储系统的各类业务数据。
+[97] style=Heading 2 | 4.2 功能模块设计
+[98] style=正文_关键词 | 根据需求分析阶段确定的功能需求，本系统从整体上可以划分为七个主要的功能模块，每个功能模块又包含若干个子功能项。系统的功能模块图如图4-2所示。
+[100] style=正文_关键词 | 图4-2 系统功能模块图
+[101] style=正文_关键词 | 各功能模块的具体说明如下：用户认证模块负责处理用户的登录验证、账号注册以及基于JWT的令牌认证等安全相关功能。活动管理模块提供志愿活动的发布、编辑、删除等管理功能，支持按关键词和状态进行搜索筛选。报名管理模块处理志愿者的在线报名申请，实施名额检查和自动审批，并维护报名记录的查询。考勤签到模块用于管理员在活动现场或事后为志愿者录入签到记录，记录实际的服务时长，并自动累计到志愿者的总服务时长中。公告管理模块负责系统公告的发布、编辑、删除和置顶管理。用户管理模块提供用户列表的查看、搜索筛选以及账号状态的启用和禁用等管理功能。统计分析模块负责汇总和展示各类统计数据，包括服务时长统计、志愿者排行榜以及报表的导出等功能。
+[102] style=Heading 2 | 4.3 数据库设计
+[103] style=Heading 3 | 4.3.1 E-R图设计
+[104] style=正文_关键词 | E-R图（实体-关系图）是进行数据库概念设计时常用的工具，通过实体、属性和关系三个基本要素来描述现实世界中数据对象之间的关联关系。根据本系统的业务需求，共抽象出用户（sys_user）、活动（vol_activity）、报名（vol_registration）、考勤（vol_attendance）和公告（vol_announcement）五个核心实体。各实体之间的关系为：一个用户可以有多条报名记录（1:N），一个活动可以被多个用户报名（1:N），一条报名记录对应一条考勤记录（1:1），一个用户可以有多条考勤记录（1:N）。系统的E-R图如图4-3所示。
+[106] style=正文_关键词 | 图4-3 系统E-R图
+[107] style=Heading 3 | 4.3.2 数据表设计
+[108] style=Normal | 根据E-R图的设计，将概念模型转换为MySQL数据库中的具体数据表结构。本系统共包含5张数据表，所有表都使用InnoDB存储引擎并采用utf8mb4字符编码，以下逐一介绍各表的字段设计。
+[109] style=正文_关键词 | 表4-1 用户表（sys_user）
+[111] style=正文_关键词 | 表4-2 活动表（vol_activity）
+[113] style=正文_关键词 | 表4-3 报名表（vol_registration）
+[115] style=正文_关键词 | 表4-4 考勤表（vol_attendance）
+[117] style=正文_关键词 | 表4-5 公告表（vol_announcement）
+[118] style=Heading 2 | 4.4 系统接口设计
+[119] style=正文_关键词 | 本系统的前后端之间通过RESTful风格的API接口进行数据交互。所有API的基础路径为http://localhost:8080/api，请求和响应数据格式均为JSON。后端统一使用ApiResponse封装类来包装响应数据，结构为{code: 状态码, message: 提示消息, data: 数据体}。需要身份认证的接口需在请求头中携带Authorization: Bearer {token}。主要的API接口设计如表4-6所示。
+[120] style=正文_关键词 | 表4-6 系统主要API接口列表
+[124] style=Heading 1 | 5 系统实现
+[125] style=Heading 2 | 5.1 开发环境与工具
+[126] style=正文_关键词 | 本系统的开发和测试所使用的软硬件环境如表5-1所示。
+[127] style=Normal | 表5-1 开发环境配置
+[128] style=Heading 2 | 5.2 用户认证模块实现
+[129] style=正文_关键词 | 用户认证模块是整个系统最基础也是最关键的模块之一，它负责管控用户进入系统的入口。本模块包括用户注册和用户登录两个子功能。
+[130] style=正文_关键词 | 用户登录的处理流程如图5-1所示。用户在登录页面输入用户名和密码后提交请求，后端的AuthController接收请求后调用AuthServiceImpl进行身份验证。验证过程首先通过UserMapper从数据库中查询该用户名对应的用户记录，然后检查用户账号是否被禁用，接着使用Spring Security的PasswordEncoder对比用户输入的明文密码与数据库中存储的BCrypt哈希密码是否匹配。如果以上校验全部通过，则调用JwtTokenProvider生成包含用户ID、用户名和角色信息的JWT Token，并将Token与用户基本信息一起返回给前端。前端接收到Token后将其保存在浏览器的localStorage中，后续所有的API请求都会在请求头中自动携带这个Token进行身份验证。
+[132] style=Normal | 图5-1 用户登录流程图
+[133] style=Normal | 用户注册功能方面，新用户填写用户名、密码、真实姓名、手机号、邮箱和身份证号等信息后提交注册请求。后端首先进行唯一性校验，检查用户名、手机号和邮箱是否已被其他用户注册，然后将用户密码通过BCrypt算法加密后存储到数据库的sys_user表中，新注册用户的角色默认设置为VOLUNTEER（志愿者），账号状态默认为启用。注册成功后用户可以使用刚注册的账号进行登录操作。用户登录界面如图5-2所示。
+
+图5-2 用户登录界面图
+[134] style=正文_关键词 | 用户登录模块部分核心代码：
+// AuthServiceImpl.java — login方法核心逻辑
+[135] style=正文_关键词 | public AuthResponse login(LoginRequest request) {
+[136] style=正文_关键词 | User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+[137] style=正文_关键词 | eq(User::getUsername, request.getUsername()));
+[138] style=正文_关键词 | if (user == null) throw new BusinessException(ErrorCode.NOT_FOUND.getCode(), "用户不存在");
+[139] style=正文_关键词 |     if (user.getStatus() != 1) throw new BusinessException("账号已被禁用");
+[140] style=正文_关键词 |     if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
+[141] style=正文_关键词 |         throw new BusinessException(ErrorCode.BAD_REQUEST.getCode(), "用户名或密码错误");
+[142] style=正文_关键词 |     String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername(), user.getRole());
+[143] style=正文_关键词 |     return AuthResponse.builder().token(token).userId(user.getId())
+[144] style=正文_关键词 |             .username(user.getUsername()).role(user.getRole()).build();
+[145] style=正文_关键词 | }
+[146] style=Heading 2 | 5.3 活动管理模块实现
+[147] style=正文_关键词 | 活动管理模块是系统的核心业务模块之一，管理员可以在该模块中完成志愿活动的创建、编辑、删除等管理操作，所有用户都可以浏览活动列表和查看活动详情。
+[148] style=正文_关键词 | 在活动列表页面中，系统通过调用GET /api/activities接口从后端分页获取活动数据，支持按关键词（标题、地点、描述）进行模糊搜索，并提供"全部活动""开放报名""名额已满""已结束""已取消"等状态筛选选项卡供用户快速筛选。每个活动卡片上展示了活动的封面图片、标题、地点、时间、状态标签以及报名进度条等信息，点击卡片可以弹出活动详情对话框，其中显示了更加详细的活动信息、招募进度和操作按钮。
+[149] style=正文_关键词 | 管理员在创建新活动时，需要在弹出的编辑对话框中填写活动标题、活动描述、活动地点、开始时间、结束时间、招募人数、主办方、联系电话以及封面图片URL等信息。填写完成后点击"发布活动"按钮，前端通过POST /api/activities接口将数据发送到后端，ActivityServiceImpl接收到请求后创建Activity实体对象，设置初始的报名人数为0和活动状态为PUBLISHED，然后调用ActivityMapper将数据插入到vol_activity表中。编辑和删除活动的操作流程类似，分别调用PUT和DELETE接口完成数据的更新和逻辑删除。活动管理界面如图5-3所示。
+[151] style=正文_关键词 | 图5-3 活动管理界面图
+[152] style=正文_关键词 | 活动管理模块部分核心代码：
+// ActivityServiceImpl.java — createActivity方法
+[153] style=正文_关键词 | public ActivityResponse createActivity(Long operatorId, ActivityRequest request) {
+[154] style=正文_关键词 |     Activity activity = new Activity();
+[155] style=正文_关键词 |     BeanUtils.copyProperties(request, activity);
+[156] style=正文_关键词 |     activity.setEnrolledCount(0);
+[157] style=正文_关键词 |     activity.setCreatedBy(operatorId);
+[158] style=正文_关键词 |     activityMapper.insert(activity);
+[159] style=正文_关键词 |     return toResponse(activity);
+[160] style=正文_关键词 | }
+[161] style=Heading 2 | 5.4 报名管理模块实现
+[162] style=Normal | 报名管理模块处理志愿者参与活动的报名流程。报名的业务流程如图5-4所示。
+[164] style=Normal | 图5-4 活动报名流程图
+[165] style=Normal | 当志愿者在活动详情中点击"立即报名"按钮时，前端调用POST /api/registrations接口并传入活动ID。后端的RegistrationServiceImpl首先检查活动状态是否为PUBLISHED（开放报名），然后检查活动的已报名人数是否达到了容量上限，接着查询该用户是否已经报名过此活动以避免重复报名。如果以上所有检查都通过，系统会创建一条状态为APPROVED的报名记录（即自动审批通过），并同步将活动的enrolled_count加1。当已报名人数达到capacity上限时，活动状态会自动变更为FULL（名额已满）。
+[166] style=Normal | 志愿者可以在个人中心查看自己的所有报名记录，前端调用GET /api/registrations/me接口获取当前用户的报名列表。管理员则可以通过GET /api/registrations?activityId=xxx来查看某个活动下所有志愿者的报名情况，这个功能在考勤签到管理中被用到。报名界面图如图5-5所示。
+
+[167] style=Normal | 图5-5 活动报名界面图
+[168] style=Normal | 报名模块部分核心代码：
+[169] style=Normal | // RegistrationServiceImpl.java — apply方法核心逻辑
+[170] style=Normal | public RegistrationResponse apply(Long userId, Long activityId) {
+[171] style=Normal |     Activity activity = getActivity(activityId);
+[172] style=Normal |     if (activity.getStatus() != ActivityStatus.PUBLISHED)
+[173] style=Normal |         throw new BusinessException(ErrorCode.BAD_REQUEST.getCode(), "活动尚未发布，无法报名");
+[174] style=Normal |     if (activity.getEnrolledCount() >= activity.getCapacity())
+[175] style=Normal |         throw new BusinessException(ErrorCode.BAD_REQUEST.getCode(), "活动名额已满");
+[176] style=Normal |     Registration registration = new Registration();
+[177] style=Normal |     registration.setActivityId(activityId);
+[178] style=Normal |     registration.setUserId(userId);
+[179] style=Normal |     registration.setStatus(RegistrationStatus.APPROVED);
+[180] style=Normal |     registrationMapper.insert(registration);
+[181] style=Normal |     activity.setEnrolledCount(activity.getEnrolledCount() + 1);
+[182] style=Normal |     activityMapper.updateById(activity);
+[183] style=Normal |     return toResponse(registration);
+[184] style=Normal | }
+[185] style=Heading 2 | 5.5 考勤签到模块实现
+[186] style=Normal | 考勤签到模块是管理员专用的功能模块，用于记录志愿者在活动中的实际出勤情况和服务时长。该模块的界面采用左右分栏布局，左侧显示所有活动的列表供管理员选择，右侧显示被选中活动的报名志愿者清单和签到操作区域。
+[187] style=Normal | 管理员选择一个活动后，系统同时调用报名列表和考勤列表两个API，获取该活动下所有已报名的志愿者信息和已有的签到记录。对于尚未签到的志愿者，管理员可以设置服务时长（默认按活动时长自动计算）并添加备注，然后点击"签到"按钮提交签到记录。后端AttendanceServiceImpl在处理签到请求时，会验证报名记录的合法性（确认报名状态为APPROVED），然后创建Attendance考勤记录并插入到vol_attendance表中。如果签到状态为PRESENT（已签到）且服务时长大于0，系统还会自动累加该志愿者在sys_user表中的total_hours字段，实现服务时长的实时累计。签到管理界面如图5-6所示。
+[189] style=Normal | 图5-6 签到管理界面图
+[190] style=Normal | 考勤签到模块部分核心代码：
+[191] style=Normal | // AttendanceServiceImpl.java — recordAttendance方法核心逻辑
+[192] style=Normal | public AttendanceResponse recordAttendance(Long operatorId, AttendanceRequest request) {
+[193] style=Normal |     Registration registration = getRegistration(request.getRegistrationId());
+[194] style=Normal |     if (registration.getStatus() != RegistrationStatus.APPROVED)
+[195] style=Normal |         throw new BusinessException(ErrorCode.BAD_REQUEST.getCode(), "报名未通过，无法签到");
+[196] style=Normal |     Attendance attendance = new Attendance();
+[197] style=Normal |     attendance.setRegistrationId(request.getRegistrationId());
+[198] style=Normal |     attendance.setActivityId(request.getActivityId());
+[199] style=Normal |     attendance.setUserId(request.getUserId());
+[200] style=Normal |     attendance.setStatus(request.getStatus());
+[201] style=Normal |     attendance.setHours(request.getHours());
+[202] style=Normal |     attendanceMapper.insert(attendance);
+[203] style=Normal |     if (request.getHours() != null && request.getHours().compareTo(BigDecimal.ZERO) > 0) {
+[204] style=Normal |         User user = userMapper.selectById(request.getUserId());
+[205] style=Normal |         user.setTotalHours(user.getTotalHours().add(request.getHours()));
+[206] style=Normal |         userMapper.updateById(user);
+[207] style=Normal |     }
+[208] style=Normal |     return toResponse(attendance);
+[209] style=Normal | }
+[210] style=Heading 2 | 5.6 公告管理模块实现
+[211] style=正文_关键词 | 公告管理模块提供系统公告的发布、编辑、删除和展示功能。管理员可以在公告管理页面查看所有已发布的公告列表，列表按照置顶优先、发布时间倒序排列，支持分页浏览。点击"发布新公告"按钮后弹出编辑对话框，管理员可以在其中输入公告标题、公告内容，并选择是否将该公告设为置顶。填写完成后点击"发布公告"按钮，前端通过POST /api/announcements接口将公告数据发送到后端，AnnouncementServiceImpl将数据保存到vol_announcement表中。
+[212] style=正文_关键词 | 公告的展示方面，系统首页（Dashboard）会获取最新的公告列表，对于志愿者用户，公告内容以滚动跑马灯的形式在页面上方展示，管理员的控制台页面则在侧边栏区域以列表形式显示最新的系统公告，并提供快捷跳转到公告管理页面的入口。公告管理界面如图5-7所示。
+[214] style=Normal | 图5-7 公告管理界面图
+[215] style=Normal | 公告管理模块部分核心代码：
+[216] style=Normal | // AnnouncementServiceImpl.java — publish方法
+[217] style=Normal | public AnnouncementResponse publish(Long operatorId, AnnouncementRequest request) {
+[218] style=Normal |     Announcement announcement = new Announcement();
+[219] style=Normal |     announcement.setTitle(request.getTitle());
+[220] style=Normal |     announcement.setContent(request.getContent());
+[221] style=Normal |     announcement.setPinned(Boolean.TRUE.equals(request.getPinned()) ? 1 : 0);
+[222] style=Normal |     announcement.setCreatedBy(operatorId);
+[223] style=Normal |     announcementMapper.insert(announcement);
+[224] style=Normal |     return toResponse(announcement);
+[225] style=Normal | }
+[226] style=Heading 2 | 5.7 用户管理模块实现
+[227] style=Normal | 用户管理模块是管理员专属的后台管理功能，用于查看和管理系统中所有注册用户的信息。该模块的主界面以表格形式展示用户列表，每行显示用户的基本信息（头像、姓名、身份证号）、角色权限（管理员/志愿者）、联系方式（邮箱、手机号）、累计志愿时长、注册时间以及操作按钮。
+[228] style=Normal | 在列表上方，系统提供了关键词搜索框和角色筛选按钮组。搜索框支持按用户名、真实姓名和手机号进行模糊查询，角色筛选提供"全部""管理员""志愿者"三个选项。用户列表支持分页浏览，底部显示总用户数和当前页码信息。管理员可以通过操作列中的"禁用"/"启用"按钮来改变用户的账号状态，禁用后该用户将无法登录系统。此外，管理员还可以通过"新增用户"按钮打开创建用户的对话框，手动为新用户创建账号。后端的UserController通过PATCH /api/users/{id}/status接口实现用户状态的修改，修改操作会直接更新sys_user表中对应记录的status字段。用户管理界面如图5-8所示。
+[230] style=Normal | 图5-8 用户管理界面图
+[231] style=正文_关键词 | 用户管理模块部分核心代码：
+[232] style=正文_关键词 | // UserServiceImpl.java — pageUsers方法
+[233] style=正文_关键词 | public IPage<UserProfileResponse> pageUsers(long page, long size, String keyword) {
+[234] style=正文_关键词 |     LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+[235] style=正文_关键词 |     if (keyword != null && !keyword.isBlank()) {
+[236] style=正文_关键词 |         wrapper.like(User::getUsername, keyword).or()
+[237] style=正文_关键词 |                 .like(User::getRealName, keyword).or()
+[238] style=正文_关键词 |                 .like(User::getPhone, keyword);
+[239] style=正文_关键词 |     }
+[240] style=正文_关键词 |     IPage<User> userPage = userMapper.selectPage(Page.of(page, size), wrapper);
+[241] style=正文_关键词 |     return userPage.convert(this::toProfile);
+[242] style=正文_关键词 | }
+[243] style=Heading 2 | 5.8 仪表盘与统计分析模块实现
+[244] style=正文_关键词 | 仪表盘是用户登录系统后看到的第一个页面，系统根据当前用户的角色展示不同的仪表盘界面。志愿者仪表盘以一个精心设计的欢迎横幅为主要视觉元素，展示用户的累计服务时长、参与活动数量以及当前可报名的活动数量等核心数据，下方推荐展示最新的三个志愿活动卡片和最新公告的滚动条。
+[245] style=正文_关键词 | 管理员仪表盘则以数据驱动的控制台风格呈现，页面顶部显示四个统计卡片，分别展示总服务时长、注册志愿者总人数、当前发布中的活动数量和活动完成率等关键指标。这些数据全部来源于后端的真实数据统计：总服务时长由top-volunteers接口返回的所有志愿者时长汇总得出，注册人数通过用户列表接口的total字段获取，活动相关数据从活动列表中按状态筛选计算。
+[246] style=正文_关键词 | 页面中部左侧展示了一个基于Recharts库绘制的柱状图，横轴为近期活动的日期，纵轴分别展示每个活动的时长和报名人数，数据来源于实际的活动记录，随着活动的增减和报名人数的变化而实时更新。右侧上方是一个饼图，展示当前所有活动按状态（开放报名、名额已满、已结束等）的分布情况，帮助管理员直观了解活动的整体状态。右侧下方展示最新的系统公告摘要。管理员还可以点击"导出报表"按钮，将志愿者统计数据导出为CSV格式的文件用于线下分析。仪表盘界面如图5-9所示。
+[248] style=Normal | 图5-9 仪表盘界面图
+[249] style=正文_关键词 | 仪表盘统计模块部分核心代码：
+// StatisticsController.java — 统计接口
+[250] style=正文_关键词 | @GetMapping("/top-volunteers")
+[251] style=正文_关键词 | public ApiResponse<List<StatisticsResponse>> topVolunteers(@RequestParam(defaultValue = "5") int limit) {
+[252] style=正文_关键词 |     return ApiResponse.success(statisticsService.topVolunteers(limit));
+[253] style=正文_关键词 | }
+[255] style=正文_关键词 | @GetMapping("/me")
+[256] style=正文_关键词 | public ApiResponse<StatisticsResponse> myStats() {
+[257] style=正文_关键词 |     return ApiResponse.success(statisticsService.userSummary(SecurityUtil.getUserId()));
+[258] style=正文_关键词 | }
+[264] style=Heading 1 | 6 系统测试
+[265] style=Heading 2 | 6.1 测试环境
+[266] style=正文_关键词 | 为了验证系统各项功能的正确性和稳定性，在系统开发完成之后进行了系统性的功能测试。测试环境的配置与开发环境保持一致，后端服务运行在本地8080端口，前端开发服务器运行在5173端口，数据库使用本地安装的MySQL 8.x实例，数据库名为volunteer_connect。测试过程中使用浏览器（Chrome最新版）作为测试客户端，通过手动操作的方式逐一验证各项功能。
+[267] style=Heading 2 | 6.2 功能测试
+[268] style=正文_关键词 | 功能测试是按照系统的功能模块逐一进行的，针对每个模块设计了详细的测试用例。以下分别展示各模块的测试用例和测试结果。
+[269] style=Normal | 表6-1 用户认证模块测试用例
+[271] style=Normal | 表6-2 活动管理模块测试用例
+[273] style=Normal | 表6-3 报名与考勤模块测试用例
+[275] style=Normal | 表6-4 公告与用户管理模块测试用例
+[276] style=Heading 2 | 6.3 测试结果分析
+[277] style=正文_关键词 | 经过对系统全部22个测试用例的逐一验证，所有测试用例的实际测试结果均与预期结果相符，测试通过率为100%。测试结果表明，本系统的各项功能模块都能够按照设计预期正常运行，用户认证的安全机制有效可靠，各类增删改查操作能够正确地反映到数据库中，数据的一致性和完整性得到了保证。
+[278] style=正文_关键词 | 在测试过程中也发现了系统的一些不足之处，比如系统目前还没有实现文件上传功能（活动封面图片只能填写外部URL地址），用户头像也暂时使用默认图片，这些方面在后续的版本迭代中可以进一步完善。此外，系统的前端页面在移动端设备上的适配还有提升空间，可以考虑在未来增加更好的响应式布局支持或者开发配套的移动端应用。
+[281] style=Heading 1 | 7 结论
+[282] style=Normal | 本文围绕基于Java的志愿服务活动管理系统的设计与实现进行了系统性的研究和开发工作。在充分调研志愿服务管理领域现状和存在问题的基础上，明确了系统的建设目标和功能需求，并采用当前主流的前后端分离技术架构完成了系统的设计、编码和测试工作。
+[283] style=Normal | 在技术选型方面，后端采用Spring Boot + MyBatis-Plus + MySQL的技术组合，利用Spring Security和JWT实现安全可靠的身份认证与权限管理；前端采用React + TypeScript + Vite的技术栈构建高性能的单页面应用，通过Recharts实现数据可视化。这套技术方案成熟稳定，各技术组件之间的集成顺畅，较好地满足了系统开发的需要。
+[284] style=Normal | 在功能实现方面，系统完成了用户认证、活动管理、报名管理、考勤签到、公告管理、用户管理以及统计分析等七大功能模块的开发。通过这些模块的协同工作，实现了志愿服务活动从发布到执行再到统计的全流程线上管理。系统中的图表数据、统计信息全部来源于数据库中的真实数据，所有的增删改查操作都能够实时地反映到后端数据库中，保证了数据的真实性和实时性。
+[285] style=Normal | 经过功能测试验证，系统各项功能运行正常，操作流程合理顺畅，达到了预期的设计目标。但是本系统在某些方面仍然存在不足和改进空间：一是缺少文件上传功能，活动封面和用户头像的管理还不够便捷；二是前端页面对移动设备的适配还有待加强；三是消息通知功能尚未实现，例如报名成功后的站内通知或短信提醒等。这些问题将作为后续版本迭代的改进方向，进一步完善系统的功能和用户体验。
+[289] style=Heading 1 | 参考文献
+[291] style=Normal | 谢恩,周大勇.基于Spring Boot的社区志愿服务管理系统设计[J].电脑知识与技术,2023,19(12):56-59.
+[292] style=Normal | 张俊杰,李健.基于SSM框架的志愿者信息管理系统的设计与实现[J].软件工程,2022,25(8):42-46.
+[293] style=Normal | Craig Walls.Spring Boot实战[M].丁雪丰,译.北京:人民邮电出版社,2016.
+[294] style=Normal | 苟向东.基于MyBatis-Plus的快速开发实践研究[J].信息与电脑,2023,35(1):118-120.
+[295] style=Normal | Alex Banks,Eve Porcello.React学习手册[M].林昊翔,译.北京:中国电力出版社,2021.
+[296] style=Normal | 王珊,萨师煊.数据库系统概论(第5版)[M].北京:高等教育出版社,2014.
+[297] style=Normal | 刘春辉.基于JWT的Web应用安全认证技术研究[J].网络安全技术与应用,2022(9):15-17.
+[298] style=Normal | 曾志敏,黄景琳.中国志愿服务的数字化治理：实践、困境与路径[J].中国行政管理,2022(3):45-52.
+[299] style=Normal | Rod Johnson.Expert One-on-One J2EE Development without EJB[M].Indianapolis:Wiley Publishing,2004.
+[300] style=Normal | Martin Fowler.企业应用架构模式[M].王怀民,周斌,译.北京:机械工业出版社,2010.
+[301] style=Normal | 许令波.深入分析Java Web技术内幕(修订版)[M].北京:电子工业出版社,2014.
+[302] style=Normal | 李刚.疯狂Java讲义(第6版)[M].北京:电子工业出版社,2022.
+[303] style=Normal | 刘增辉.MyBatis从入门到精通[M].北京:电子工业出版社,2017.
+[304] style=Normal | 李哲,陈涛.前后端分离架构在Web开发中的应用研究[J].计算机应用与软件,2023,40(5):87-91.
+[305] style=Normal | 朱晓林.基于React的企业级前端应用开发实践[J].软件导刊,2022,21(12):105-109.
+[309] style=Heading 1 | 致  谢
+[311] style=正文_关键词 | 时光飞逝，四年的大学生活即将画上句号。在这篇毕业论文完成之际，我想借此机会向在我学习和生活中给予过帮助和关怀的所有人表示最诚挚的感谢。
+[312] style=正文_关键词 | 首先，我要衷心感谢我的指导老师。在本次毕业设计的整个过程中，从课题的选定、方案的确定到系统的开发和论文的撰写，指导老师都给予了我悉心的指导和耐心的帮助。每当我在研究过程中遇到困难和疑惑的时候，老师总是能够及时地为我指点迷津、提供建议，帮助我克服了一个又一个难关。老师严谨认真的治学态度和专业深厚的学术水平，深深地影响了我，让我受益匪浅。
+[313] style=正文_关键词 | 其次，我要感谢安徽三联学院工学部的全体老师们。是他们在大学四年里传授给我了扎实的专业知识和实践技能，为我完成本次毕业设计奠定了坚实的基础。特别是软件工程、数据库原理、Web开发技术等课程的授课老师，他们讲授的知识在本次系统开发中得到了充分的应用。
+[314] style=正文_关键词 | 同时，我还要感谢在大学期间一起学习、一起成长的同学们。在课程设计、实验作业以及本次毕业设计过程中，同学们之间的交流和讨论让我获得了许多有价值的思路和灵感。正是有了大家的相互帮助和支持，我才能够顺利地完成各阶段的学习任务。
+[315] style=正文_关键词 | 最后，我要特别感谢我的家人。感谢他们一直以来对我学业的支持和生活上的关怀照顾，是他们的无私付出和默默支持，给了我坚持学习和不断前进的动力。
+[316] style=正文_关键词 | 由于本人水平有限，论文中难免存在一些不足之处，恳请各位老师和专家批评指正。
